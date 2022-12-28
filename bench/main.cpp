@@ -2,37 +2,37 @@
 #include <new>
 #include <boltimg.h>
 
-const size_t WIDTH = 10000;
-const size_t HEIGHT = 10000;
+constexpr size_t W = 10000;
+constexpr size_t H = 10000;
 
-static void BM_UInt16Float32Norm_Scalar(benchmark::State &state)
+static void BM_UInt16Float32Norm(benchmark::State &state)
 {
   BoltContext ctx;
-  bolt_ctx_init(&ctx, BOLT_HL_SCALAR);
-
-  uint16_t *src = new uint16_t[WIDTH * HEIGHT];
-  float *dst = new float[WIDTH * HEIGHT];
-
-  for (auto _ : state)
+  BoltHardwareLevel hl = static_cast<BoltHardwareLevel>(state.range(0));
+  bool aligned = state.range(1);
+  if (bolt_ctx_init(&ctx, hl) != BOLT_ERR_SUCCESS)
   {
-    bolt_conv_uint16_float32_norm(&ctx, WIDTH, HEIGHT, src, dst);
+    state.SkipWithError("Not supported");
+    return;
   }
 
-  delete[] src;
-  delete[] dst;
-}
+  uint16_t *src = nullptr;
+  float *dst = nullptr;
 
-static void BM_UInt16Float32Norm_AVX(benchmark::State &state)
-{
-  BoltContext ctx;
-  bolt_ctx_init(&ctx, BOLT_HL_AVX);
-
-  uint16_t *src = new (std::align_val_t(32)) uint16_t[WIDTH * HEIGHT];
-  float *dst = new (std::align_val_t(32)) float[WIDTH * HEIGHT];
+  if (aligned)
+  {
+    src = new (std::align_val_t(32)) uint16_t[W * H];
+    dst = new (std::align_val_t(32)) float[W * H];
+  }
+  else
+  {
+    src = new uint16_t[W * H];
+    dst = new float[W * H];
+  }
 
   for (auto _ : state)
   {
-    bolt_conv_uint16_float32_norm(&ctx, WIDTH, HEIGHT, src, dst);
+    benchmark::DoNotOptimize(bolt_conv_uint16_float32_norm(&ctx, W, H, src, dst));
   }
 
   delete[] src;
@@ -40,8 +40,16 @@ static void BM_UInt16Float32Norm_AVX(benchmark::State &state)
 }
 
 // Register the function as a benchmark
-BENCHMARK(BM_UInt16Float32Norm_Scalar);
-BENCHMARK(BM_UInt16Float32Norm_AVX);
+// clang-format off
+BENCHMARK(BM_UInt16Float32Norm) ->Args({BOLT_HL_AVX512, true})
+                                ->Args({BOLT_HL_AVX512, false})
+                                ->Args({BOLT_HL_AVX2, true})
+                                ->Args({BOLT_HL_AVX2, false})
+                                ->Args({BOLT_HL_SSE2, true})
+                                ->Args({BOLT_HL_SSE2, false})
+                                ->Args({BOLT_HL_SCALAR, true})
+                                ->Args({BOLT_HL_SCALAR, false});
+// clang-format on
 
 // Run the benchmark
 BENCHMARK_MAIN();
