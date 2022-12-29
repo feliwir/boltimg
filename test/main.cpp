@@ -12,14 +12,14 @@ TEST(Conversion, uint16_float32_norm)
 
     uint16_t *src_a = new (std::align_val_t(32)) uint16_t[W * H];
     float *dst_a = new (std::align_val_t(32)) float[W * H];
-    EXPECT_EQ(bolt_conv_uint16_float32_norm(&ctx, W, H, src_a, dst_a), BOLT_ERR_SUCCESS);
+    EXPECT_EQ(bolt_conv_uint16_float32_norm(&ctx, W, H, 1, src_a, dst_a), BOLT_ERR_SUCCESS);
 
     delete[] src_a;
     delete[] dst_a;
 
     uint16_t *src_u = new (std::align_val_t(1)) uint16_t[W * H];
     float *dst_u = new (std::align_val_t(1)) float[W * H];
-    EXPECT_EQ(bolt_conv_uint16_float32_norm(&ctx, W, H, src_u, dst_u), BOLT_ERR_SUCCESS);
+    EXPECT_EQ(bolt_conv_uint16_float32_norm(&ctx, W, H, 1, src_u, dst_u), BOLT_ERR_SUCCESS);
 
     delete[] src_u;
     delete[] dst_u;

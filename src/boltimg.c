@@ -33,23 +33,31 @@ static void cpuid(uint32_t *eax, uint32_t *ebx, uint32_t *ecx,
 }
 #endif
 
-extern int conv_uint16_float32_norm_avx512(size_t w, size_t h, uint16_t *restrict src, float *restrict dst);
-extern int conv_uint16_float32_norm_avx2(size_t w, size_t h, uint16_t *restrict src, float *restrict dst);
-extern int conv_uint16_float32_norm_sse2(size_t w, size_t h, uint16_t *restrict src, float *restrict dst);
-extern int conv_uint16_float32_norm_scalar(size_t w, size_t h, uint16_t *restrict src, float *restrict dst);
+extern int conv_uint8_float32_norm_avx512(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
+extern int conv_uint8_float32_norm_avx2(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
+extern int conv_uint8_float32_norm_sse2(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
+extern int conv_uint8_float32_norm_scalar(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
+
+extern int conv_uint16_float32_norm_avx512(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
+extern int conv_uint16_float32_norm_avx2(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
+extern int conv_uint16_float32_norm_sse2(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
+extern int conv_uint16_float32_norm_scalar(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
 
 static bool bolt_ctx_setup_dispatch(BoltContext *ctx, BoltHardwareLevel hl)
 {
     switch (hl)
     {
     case BOLT_HL_AVX512:
+        //ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_avx512;
         ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_avx512;
         break;
     case BOLT_HL_AVX2:
+        //ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_avx2;
         ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_avx2;
         break;
     case BOLT_HL_AVX:
     case BOLT_HL_SSE2:
+        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_sse2;
         ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_sse2;
         break;
     case BOLT_HL_SCALAR: // Stick with the scalar version we already had
@@ -63,6 +71,7 @@ static bool bolt_ctx_setup_dispatch(BoltContext *ctx, BoltHardwareLevel hl)
 int bolt_ctx_init(BoltContext *ctx, BoltHardwareLevel target_lvl)
 {
     // Setup scalar versions first
+    ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_scalar;
     ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_scalar;
 
     // Try to find the best vectorized version now
@@ -115,7 +124,12 @@ bool bolt_is_aligned(const void *ptr, size_t alignment)
     return (((uintptr_t)ptr) % (alignment) == 0);
 }
 
-int bolt_conv_uint16_float32_norm(BoltContext *ctx, size_t w, size_t h, uint16_t *src, float *dst)
+int bolt_conv_uint8_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint8_t *src, float *dst)
 {
-    return ctx->conv_uint16_float32_norm(w, h, src, dst);
+    return ctx->conv_uint8_float32_norm(w, h, c, src, dst);
+}
+
+int bolt_conv_uint16_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint16_t *src, float *dst)
+{
+    return ctx->conv_uint16_float32_norm(w, h, c, src, dst);
 }

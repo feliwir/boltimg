@@ -7,6 +7,7 @@ extern "C"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <limits.h>
 
 typedef enum _BoltError
 {
@@ -28,11 +29,13 @@ typedef enum _BoltHardwareLevel
 
 typedef struct _BoltContext
 {
-    int (*conv_uint16_float32_norm)(size_t w, size_t h, uint16_t *src, float *dst);
+    int (*conv_uint8_float32_norm)(size_t w, size_t h, size_t c, uint8_t *src, float *dst);
+    int (*conv_uint16_float32_norm)(size_t w, size_t h, size_t c, uint16_t *src, float *dst);
 } BoltContext;
 
 int bolt_ctx_init(BoltContext *ctx, BoltHardwareLevel hl);
-int bolt_conv_uint16_float32_norm(BoltContext *ctx, size_t w, size_t h, uint16_t *src, float *dst);
+int bolt_conv_uint8_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint8_t *src, float *dst);
+int bolt_conv_uint16_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint16_t *src, float *dst);
 
 bool bolt_is_aligned(const void *ptr, size_t alignment);
 
