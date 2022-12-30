@@ -26,7 +26,7 @@ AVX512_TGT static int conv_uint16_float32_norm_avx512_aligned(size_t w, size_t h
     __m512 float_pack_low, float_pack_high;
 
     size_t idx = 0;
-    for (; idx < (h * w * c - sizeof(__m512)); idx += sizeof(__m512))
+    for (; idx < (h * w * c - 32); idx += 32)
     {
         __m512i short_pack = _mm512_load_si512((__m512i *)&src[idx]);
         conv_uint16_float32_norm_avx512_step(short_pack, &float_pack_low, &float_pack_high, scalar);
@@ -46,7 +46,7 @@ AVX512_TGT static int conv_uint16_float32_norm_avx512_unaligned(size_t w, size_t
     __m512 float_pack_low, float_pack_high;
 
     size_t idx = 0;
-    for (; idx < (h * w * c - sizeof(__m512)); idx += sizeof(__m512))
+    for (; idx < (h * w * c - 32); idx += 32)
     {
         __m512i short_pack = _mm512_loadu_si512((__m512i *)&src[idx]);
         conv_uint16_float32_norm_avx512_step(short_pack, &float_pack_low, &float_pack_high, scalar);

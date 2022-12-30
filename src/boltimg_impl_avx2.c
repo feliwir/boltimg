@@ -26,7 +26,7 @@ AVX2_TGT static int conv_uint16_float32_norm_avx2_aligned(size_t w, size_t h, si
     __m256 float_pack_low, float_pack_high;
 
     size_t idx = 0;
-    for (; idx < (h * w * c - sizeof(__m256)); idx += sizeof(__m256))
+    for (; idx < (h * w * c - 16); idx += 16)
     {
         __m256i short_pack = _mm256_load_si256((__m256i *)&src[idx]);
         conv_uint16_float32_norm_avx2_step(short_pack, &float_pack_low, &float_pack_high, scalar);
@@ -46,7 +46,7 @@ AVX2_TGT static int conv_uint16_float32_norm_avx2_unaligned(size_t w, size_t h, 
     __m256 float_pack_low, float_pack_high;
 
     size_t idx = 0;
-    for (; idx < (h * w * c - sizeof(__m256)); idx += sizeof(__m256))
+    for (; idx < (h * w * c - 16); idx += 16)
     {
         __m256i short_pack = _mm256_loadu_si256((__m256i *)&src[idx]);
         conv_uint16_float32_norm_avx2_step(short_pack, &float_pack_low, &float_pack_high, scalar);
