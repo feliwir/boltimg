@@ -35,7 +35,7 @@ static void cpuid(uint32_t *eax, uint32_t *ebx, uint32_t *ecx,
 
 extern int conv_uint8_float32_norm_avx512(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
 extern int conv_uint8_float32_norm_avx2(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
-extern int conv_uint8_float32_norm_sse2(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
+extern int conv_uint8_float32_norm_sse4(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
 extern int conv_uint8_float32_norm_scalar(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
 
 extern int conv_uint16_float32_norm_avx512(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
@@ -52,12 +52,14 @@ static bool bolt_ctx_setup_dispatch(BoltContext *ctx, BoltHardwareLevel hl)
         ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_avx512;
         break;
     case BOLT_HL_AVX2:
-        //ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_avx2;
+        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_avx2;
         ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_avx2;
         break;
     case BOLT_HL_AVX:
+    case BOLT_HL_SSE4:
+        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_sse4;
     case BOLT_HL_SSE2:
-        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_sse2;
+        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_sse4;
         ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_sse2;
         break;
     case BOLT_HL_SCALAR: // Stick with the scalar version we already had
@@ -100,12 +102,15 @@ int bolt_ctx_init(BoltContext *ctx, BoltHardwareLevel target_lvl)
     {
         selected_lvl = HAS_AVX512 ? BOLT_HL_AVX512 : HAS_AVX2 ? BOLT_HL_AVX2
                                                  : HAS_AVX    ? BOLT_HL_AVX
-                                                 : HAS_SSE    ? BOLT_HL_SSE2
+                                                 : HAS_SSE4_1 ? BOLT_HL_SSE4
+                                                 : HAS_SSE2   ? BOLT_HL_SSE2
                                                               : BOLT_HL_SCALAR;
     }
     else if (target_lvl == BOLT_HL_AVX512 && !HAS_AVX512)
         return BOLT_ERR_UNSUPPORTED;
     else if (target_lvl == BOLT_HL_AVX && !HAS_AVX)
+        return BOLT_ERR_UNSUPPORTED;
+    else if (target_lvl == BOLT_HL_SSE4 && !HAS_SSE4_1)
         return BOLT_ERR_UNSUPPORTED;
     else if (target_lvl == BOLT_HL_SSE2 && !HAS_SSE2)
         return BOLT_ERR_UNSUPPORTED;

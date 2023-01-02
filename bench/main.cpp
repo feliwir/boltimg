@@ -93,21 +93,21 @@ static void BM_UInt16Float32Norm(benchmark::State &state)
 
 // Register the function as a benchmark
 // clang-format off
-// BENCHMARK(BM_UInt8Float32Norm)->Args({BOLT_HL_AVX512, true})
-//                               ->Args({BOLT_HL_AVX512, false})
-//                               ->Args({BOLT_HL_AVX2, true})
-//                               ->Args({BOLT_HL_AVX2, false})
-//                               ->Args({BOLT_HL_SSE2, true})
-//                               ->Args({BOLT_HL_SSE2, false})
-//                               ->Args({BOLT_HL_SCALAR, true})
-//                               ->Args({BOLT_HL_SCALAR, false});
+BENCHMARK(BM_UInt8Float32Norm)->Args({BOLT_HL_AVX512, true})
+                              ->Args({BOLT_HL_AVX512, false})
+                              ->Args({BOLT_HL_AVX2, true})
+                              ->Args({BOLT_HL_AVX2, false})
+                              ->Args({BOLT_HL_SSE4, true})
+                              ->Args({BOLT_HL_SSE4, false})
+                              ->Args({BOLT_HL_SCALAR, true})
+                              ->Args({BOLT_HL_SCALAR, false});
 
 BENCHMARK(BM_UInt16Float32Norm) ->Args({BOLT_HL_AVX512, true})
                                 ->Args({BOLT_HL_AVX512, false})
                                 ->Args({BOLT_HL_AVX2, true})
                                 ->Args({BOLT_HL_AVX2, false})
-                                ->Args({BOLT_HL_SSE2, true})
-                                ->Args({BOLT_HL_SSE2, false})
+                                ->Args({BOLT_HL_SSE4, true})
+                                ->Args({BOLT_HL_SSE4, false})
                                 ->Args({BOLT_HL_SCALAR, true})
                                 ->Args({BOLT_HL_SCALAR, false});
 // clang-format on

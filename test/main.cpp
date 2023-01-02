@@ -8,7 +8,7 @@ constexpr int H = 1000;
 TEST(Conversion, uint8_float32_norm)
 {
     BoltContext ctx;
-    EXPECT_EQ(bolt_ctx_init(&ctx, BOLT_HL_AUTO), BOLT_ERR_SUCCESS);
+    EXPECT_EQ(bolt_ctx_init(&ctx, BOLT_HL_AVX2), BOLT_ERR_SUCCESS);
 
     uint8_t *src = new (std::align_val_t(32)) uint8_t[W * H];
     std::fill_n(src, W * H, UCHAR_MAX);

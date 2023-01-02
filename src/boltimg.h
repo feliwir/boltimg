@@ -21,6 +21,7 @@ typedef enum _BoltHardwareLevel
     BOLT_HL_AUTO,
     BOLT_HL_SCALAR,
     BOLT_HL_SSE2,
+    BOLT_HL_SSE4,
     BOLT_HL_AVX,
     BOLT_HL_AVX2,
     BOLT_HL_AVX512,
