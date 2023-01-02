@@ -34,6 +34,9 @@ typedef struct _BoltContext
     int (*conv_uint16_float32_norm)(size_t w, size_t h, size_t c, uint16_t *src, float *dst);
 } BoltContext;
 
+void* bolt_alloc(size_t size);
+void bolt_free(void* ptr);
+
 int bolt_ctx_init(BoltContext *ctx, BoltHardwareLevel hl);
 int bolt_conv_uint8_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint8_t *src, float *dst);
 int bolt_conv_uint16_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint16_t *src, float *dst);

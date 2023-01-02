@@ -48,7 +48,7 @@ static bool bolt_ctx_setup_dispatch(BoltContext *ctx, BoltHardwareLevel hl)
     switch (hl)
     {
     case BOLT_HL_AVX512:
-        //ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_avx512;
+        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_avx512;
         ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_avx512;
         break;
     case BOLT_HL_AVX2:
@@ -59,7 +59,6 @@ static bool bolt_ctx_setup_dispatch(BoltContext *ctx, BoltHardwareLevel hl)
     case BOLT_HL_SSE4:
         ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_sse4;
     case BOLT_HL_SSE2:
-        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_sse4;
         ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_sse2;
         break;
     case BOLT_HL_SCALAR: // Stick with the scalar version we already had
@@ -137,4 +136,18 @@ int bolt_conv_uint8_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c,
 int bolt_conv_uint16_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint16_t *src, float *dst)
 {
     return ctx->conv_uint16_float32_norm(w, h, c, src, dst);
+}
+
+void *bolt_alloc(size_t size)
+{
+#if defined(__x86_64__) || defined(_M_AMD64)
+    return _mm_malloc(size, 64);
+#endif
+}
+
+void bolt_free(void *ptr)
+{
+#if defined(__x86_64__) || defined(_M_AMD64)
+    _mm_free(ptr);
+#endif
 }

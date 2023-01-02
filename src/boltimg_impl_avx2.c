@@ -65,8 +65,8 @@ AVX2_TGT static int conv_uint8_float32_norm_avx2_unaligned(size_t w, size_t h, s
 
 int conv_uint8_float32_norm_avx2(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst)
 {
-    bool src_aligned = bolt_is_aligned(src, sizeof(__m128));
-    bool dst_aligned = bolt_is_aligned(dst, sizeof(__m128));
+    bool src_aligned = bolt_is_aligned(src, sizeof(__m256));
+    bool dst_aligned = bolt_is_aligned(dst, sizeof(__m256));
 
     if (src_aligned && dst_aligned)
         return conv_uint8_float32_norm_avx2_aligned(w, h, c, src, dst);

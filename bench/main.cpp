@@ -21,14 +21,14 @@ static void BM_UInt8Float32Norm(benchmark::State &state)
 
   if (aligned)
   {
-    src = new (std::align_val_t(32)) uint8_t[W * H];
-    dst = new (std::align_val_t(32)) float[W * H];
+    src = static_cast<uint8_t *>(bolt_alloc(W * H * sizeof(uint8_t)));
+    dst = static_cast<float *>(bolt_alloc(W * H * sizeof(float)));
   }
   else
   {
     // Make sure this is unaligned
-    src = new uint8_t[W * H + 1];
-    dst = new float[W * H + 1];
+    src = static_cast<uint8_t *>(bolt_alloc(W * H * sizeof(uint8_t) + 1));
+    dst = static_cast<float *>(bolt_alloc(W * H * sizeof(float) + 1));
     src += 1;
     dst += 1;
   }
@@ -44,8 +44,8 @@ static void BM_UInt8Float32Norm(benchmark::State &state)
     dst -= 1;
   }
 
-  delete[] src;
-  delete[] dst;
+  bolt_free(src);
+  bolt_free(dst);
 }
 
 static void BM_UInt16Float32Norm(benchmark::State &state)
@@ -64,14 +64,14 @@ static void BM_UInt16Float32Norm(benchmark::State &state)
 
   if (aligned)
   {
-    src = new (std::align_val_t(32)) uint16_t[W * H];
-    dst = new (std::align_val_t(32)) float[W * H];
+    src = static_cast<uint16_t *>(bolt_alloc(W * H * sizeof(uint16_t)));
+    dst = static_cast<float *>(bolt_alloc(W * H * sizeof(float)));
   }
   else
   {
     // Make sure this is unaligned
-    src = new uint16_t[W * H + 1];
-    dst = new float[W * H + 1];
+    src = static_cast<uint16_t*>(bolt_alloc(W * H * sizeof(uint16_t) + 1));
+    dst = static_cast<float*>(bolt_alloc(W * H * sizeof(float) + 1));
     src += 1;
     dst += 1;
   }
@@ -87,8 +87,8 @@ static void BM_UInt16Float32Norm(benchmark::State &state)
     dst -= 1;
   }
 
-  delete[] src;
-  delete[] dst;
+  bolt_free(src);
+  bolt_free(dst);
 }
 
 // Register the function as a benchmark
