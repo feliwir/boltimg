@@ -21,22 +21,24 @@ static void BM_UInt8Float32Norm(benchmark::State &state)
 
   if (aligned)
   {
-    src = static_cast<uint8_t *>(bolt_alloc(W * H * sizeof(uint8_t)));
-    dst = static_cast<float *>(bolt_alloc(W * H * sizeof(float)));
+    src = static_cast<uint8_t *>(bolt_alloc(sizeof(uint8_t) * W * H));
+    dst = static_cast<float *>(bolt_alloc(sizeof(float) * W * H));
   }
   else
   {
     // Make sure this is unaligned
-    src = static_cast<uint8_t *>(bolt_alloc(W * H * sizeof(uint8_t) + 1));
-    dst = static_cast<float *>(bolt_alloc(W * H * sizeof(float) + 1));
+    src = static_cast<uint8_t *>(bolt_alloc(sizeof(uint8_t) * W * H + sizeof(uint8_t)));
+    dst = static_cast<float *>(bolt_alloc(sizeof(float) * W * H + sizeof(float)));
     src += 1;
     dst += 1;
   }
 
   for (auto _ : state)
   {
-    benchmark::DoNotOptimize(bolt_conv_uint8_float32_norm(&ctx, W, H, 1, src, dst));
+    benchmark::DoNotOptimize(bolt_conv_u8_f32_norm(&ctx, W, H, 1, src, dst));
   }
+  state.SetBytesProcessed(state.iterations() * sizeof(uint8_t) * W * H);
+  state.SetItemsProcessed(state.iterations() * W * H);
 
   if (!aligned)
   {
@@ -64,22 +66,24 @@ static void BM_UInt16Float32Norm(benchmark::State &state)
 
   if (aligned)
   {
-    src = static_cast<uint16_t *>(bolt_alloc(W * H * sizeof(uint16_t)));
-    dst = static_cast<float *>(bolt_alloc(W * H * sizeof(float)));
+    src = static_cast<uint16_t *>(bolt_alloc(sizeof(uint16_t) * W * H));
+    dst = static_cast<float *>(bolt_alloc(sizeof(float) * W * H));
   }
   else
   {
     // Make sure this is unaligned
-    src = static_cast<uint16_t*>(bolt_alloc(W * H * sizeof(uint16_t) + 1));
-    dst = static_cast<float*>(bolt_alloc(W * H * sizeof(float) + 1));
+    src = static_cast<uint16_t *>(bolt_alloc(sizeof(uint16_t) * W * H + sizeof(uint16_t)));
+    dst = static_cast<float *>(bolt_alloc(sizeof(float) * W * H + sizeof(float)));
     src += 1;
     dst += 1;
   }
 
   for (auto _ : state)
   {
-    benchmark::DoNotOptimize(bolt_conv_uint16_float32_norm(&ctx, W, H, 1, src, dst));
+    benchmark::DoNotOptimize(bolt_conv_u16_f32_norm(&ctx, W, H, 1, src, dst));
   }
+  state.SetBytesProcessed(state.iterations() * sizeof(uint16_t) * W * H);
+  state.SetItemsProcessed(state.iterations() * W * H);
 
   if (!aligned)
   {
@@ -99,6 +103,8 @@ BENCHMARK(BM_UInt8Float32Norm)->Args({BOLT_HL_AVX512, true})
                               ->Args({BOLT_HL_AVX2, false})
                               ->Args({BOLT_HL_SSE4, true})
                               ->Args({BOLT_HL_SSE4, false})
+                              ->Args({BOLT_HL_SSE2, true})
+                              ->Args({BOLT_HL_SSE2, false})
                               ->Args({BOLT_HL_SCALAR, true})
                               ->Args({BOLT_HL_SCALAR, false});
 
@@ -108,6 +114,8 @@ BENCHMARK(BM_UInt16Float32Norm) ->Args({BOLT_HL_AVX512, true})
                                 ->Args({BOLT_HL_AVX2, false})
                                 ->Args({BOLT_HL_SSE4, true})
                                 ->Args({BOLT_HL_SSE4, false})
+                                ->Args({BOLT_HL_SSE2, true})
+                                ->Args({BOLT_HL_SSE2, false})
                                 ->Args({BOLT_HL_SCALAR, true})
                                 ->Args({BOLT_HL_SCALAR, false});
 // clang-format on

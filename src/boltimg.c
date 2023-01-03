@@ -1,6 +1,7 @@
 #include "boltimg.h"
 
 #if defined(__x86_64__) || defined(_M_AMD64)
+#include <mm_malloc.h>
 #if defined(_MSC_VER)
 #include <intrin.h>
 #elif defined(HAVE_GCC_GET_CPUID) && defined(USE_GCC_GET_CPUID)
@@ -33,33 +34,36 @@ static void cpuid(uint32_t *eax, uint32_t *ebx, uint32_t *ecx,
 }
 #endif
 
-extern int conv_uint8_float32_norm_avx512(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
-extern int conv_uint8_float32_norm_avx2(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
-extern int conv_uint8_float32_norm_sse4(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
-extern int conv_uint8_float32_norm_scalar(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
+extern int conv_u8_f32_norm_avx512(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
+extern int conv_u8_f32_norm_avx2(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
+extern int conv_u8_f32_norm_sse4(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
+extern int conv_u8_f32_norm_scalar(size_t w, size_t h, size_t c, uint8_t *restrict src, float *restrict dst);
 
-extern int conv_uint16_float32_norm_avx512(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
-extern int conv_uint16_float32_norm_avx2(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
-extern int conv_uint16_float32_norm_sse2(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
-extern int conv_uint16_float32_norm_scalar(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
+extern int conv_u16_f32_norm_avx512(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
+extern int conv_u16_f32_norm_avx2(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
+extern int conv_u16_f32_norm_sse2(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
+extern int conv_u16_f32_norm_sse4(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
+extern int conv_u16_f32_norm_scalar(size_t w, size_t h, size_t c, uint16_t *restrict src, float *restrict dst);
 
 static bool bolt_ctx_setup_dispatch(BoltContext *ctx, BoltHardwareLevel hl)
 {
     switch (hl)
     {
     case BOLT_HL_AVX512:
-        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_avx512;
-        ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_avx512;
+        ctx->conv_u8_f32_norm = conv_u8_f32_norm_avx512;
+        ctx->conv_u16_f32_norm = conv_u16_f32_norm_avx512;
         break;
     case BOLT_HL_AVX2:
-        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_avx2;
-        ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_avx2;
+        ctx->conv_u8_f32_norm = conv_u8_f32_norm_avx2;
+        ctx->conv_u16_f32_norm = conv_u16_f32_norm_avx2;
         break;
     case BOLT_HL_AVX:
     case BOLT_HL_SSE4:
-        ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_sse4;
+        ctx->conv_u8_f32_norm = conv_u8_f32_norm_sse4;
+        ctx->conv_u16_f32_norm = conv_u16_f32_norm_sse4;
+        break;
     case BOLT_HL_SSE2:
-        ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_sse2;
+        ctx->conv_u16_f32_norm = conv_u16_f32_norm_sse2;
         break;
     case BOLT_HL_SCALAR: // Stick with the scalar version we already had
         break;
@@ -72,8 +76,8 @@ static bool bolt_ctx_setup_dispatch(BoltContext *ctx, BoltHardwareLevel hl)
 int bolt_ctx_init(BoltContext *ctx, BoltHardwareLevel target_lvl)
 {
     // Setup scalar versions first
-    ctx->conv_uint8_float32_norm = conv_uint8_float32_norm_scalar;
-    ctx->conv_uint16_float32_norm = conv_uint16_float32_norm_scalar;
+    ctx->conv_u8_f32_norm = conv_u8_f32_norm_scalar;
+    ctx->conv_u16_f32_norm = conv_u16_f32_norm_scalar;
 
     // Try to find the best vectorized version now
     BoltHardwareLevel selected_lvl;
@@ -128,20 +132,22 @@ bool bolt_is_aligned(const void *ptr, size_t alignment)
     return (((uintptr_t)ptr) % (alignment) == 0);
 }
 
-int bolt_conv_uint8_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint8_t *src, float *dst)
+int bolt_conv_u8_f32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint8_t *src, float *dst)
 {
-    return ctx->conv_uint8_float32_norm(w, h, c, src, dst);
+    return ctx->conv_u8_f32_norm(w, h, c, src, dst);
 }
 
-int bolt_conv_uint16_float32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint16_t *src, float *dst)
+int bolt_conv_u16_f32_norm(BoltContext *ctx, size_t w, size_t h, size_t c, uint16_t *src, float *dst)
 {
-    return ctx->conv_uint16_float32_norm(w, h, c, src, dst);
+    return ctx->conv_u16_f32_norm(w, h, c, src, dst);
 }
 
 void *bolt_alloc(size_t size)
 {
 #if defined(__x86_64__) || defined(_M_AMD64)
     return _mm_malloc(size, 64);
+#else
+    return malloc(size);
 #endif
 }
 
@@ -149,5 +155,26 @@ void bolt_free(void *ptr)
 {
 #if defined(__x86_64__) || defined(_M_AMD64)
     _mm_free(ptr);
+#else
+    free(ptr);
+#endif
+}
+
+void *bolt_realloc(void *ptr, size_t size)
+{
+#if defined(__x86_64__) || defined(_M_AMD64)
+#if defined _MSC_VER
+    return _aligned_realloc(ptr, size, 64);
+#else // Worst case...
+    void *newPtr = realloc(ptr, size);
+    if (!bolt_is_aligned(newPtr, 64))
+    {
+        if (posix_memalign(&newPtr, 64, size))
+            return NULL;
+    }
+    return newPtr;
+#endif
+#else
+    return realloc(ptr, size);
 #endif
 }

@@ -5,5 +5,5 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(googlebenchmark)
 
-add_executable(boltimg_bench main.cpp)
+add_executable(boltimg_bench bench_conv.cpp)
 target_link_libraries(boltimg_bench boltimg benchmark::benchmark)
