@@ -30,6 +30,6 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(BoltyImage, bolty_image, BOLTY, IMAGE, GObject)
 
 BoltyImage *bolty_image_new_from_data(size_t w, size_t h, size_t c, float *data);
-void bolty_image_set_from_data(BoltyImage * self, size_t w, size_t h, size_t c, float *data);
+void bolty_image_set_from_data(BoltyImage *self, size_t w, size_t h, size_t c, float *data);
 
 G_END_DECLS

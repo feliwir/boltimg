@@ -12,6 +12,7 @@ add_custom_command(
     COMMAND ${GLIB_COMPILE_RESOURCES}
     ARGS
         --target=${GRESOURCE_C}
+        --generate-source
         ${GRESOURCE_XML}
     VERBATIM
     MAIN_DEPENDENCY ${GRESOURCE_XML}
@@ -24,7 +25,7 @@ set_source_files_properties(
     PROPERTIES GENERATED TRUE
 )
 
-add_executable(bolty bolty_main.c bolty_image.c bolty_image.h ${GRESOURCE_C})
+add_executable(bolty bolty_app.c bolty_main.c bolty_image.c bolty_window.c ${GRESOURCE_C})
 
 target_link_libraries(bolty boltimg ${GTK4_LIBRARIES} m)
 target_include_directories(bolty PRIVATE ${GTK4_INCLUDE_DIRS})
