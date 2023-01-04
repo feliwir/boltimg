@@ -64,7 +64,7 @@ SSE4_TGT static int conv_u8_f32_norm_sse4_unaligned(size_t w, size_t h, size_t c
     {
         __m128i byte_pack = _mm_loadu_si128((__m128i *)&src[idx]);
         conv_u8_f32_norm_sse4_step(byte_pack, float_pack, scalar);
-       for (size_t i = 0; i < 4; ++i)
+        for (size_t i = 0; i < 4; ++i)
             _mm_storeu_ps(&dst[idx + i * 4], float_pack[i]);
     }
     for (; idx < h * w * c; ++idx)
@@ -91,7 +91,7 @@ int conv_u8_f32_norm_sse4(size_t w, size_t h, size_t c, uint8_t *restrict src, f
 SSE4_TGT static inline void conv_u16_f32_norm_sse4_step(__m128i short_pack, __m128 float_pack[2], __m128 scalar)
 {
     __m128i int_pack[2] = {_mm_cvtepu16_epi32(short_pack), _mm_cvtepu16_epi32(_mm_unpackhi_epi64(short_pack, short_pack))};
-    for(int i = 0;i<2;++i)
+    for (int i = 0; i < 2; ++i)
     {
         __m128 unscaled = _mm_cvtepi32_ps(int_pack[i]);
         float_pack[i] = _mm_div_ps(unscaled, scalar);

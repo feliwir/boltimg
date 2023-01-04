@@ -19,12 +19,12 @@ static void on_activate(GtkApplication *app)
     float *rgbf32 = bolt_alloc(sizeof(float) * w * h * c);
     bolt_conv_u8_f32_norm(&ctx, w, h, c, rgb8, rgbf32);
 
-    BoltyImage* img = bolty_image_new_from_data(w, h, c, rgbf32);
+    BoltyImage *img = bolty_image_new_from_data(w, h, c, rgbf32);
 
     // Create a new window
     GtkWidget *window = gtk_application_window_new(app);
     // Create a new button
-    GtkWidget *picture = gtk_picture_new_for_paintable(img);
+    GtkWidget *picture = gtk_picture_new_for_paintable(GDK_PAINTABLE(img));
     gtk_window_set_child(GTK_WINDOW(window), picture);
     gtk_window_present(GTK_WINDOW(window));
 }
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 {
     // Create a new application
     GtkApplication *app = gtk_application_new("org.feliwir.Bolty",
-                                              G_APPLICATION_FLAGS_NONE);
+                                              G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
     return g_application_run(G_APPLICATION(app), argc, argv);
 }
